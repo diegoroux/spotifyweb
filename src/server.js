@@ -118,3 +118,5 @@ SpotifyApi.prototype = {
         this._refresh_token = data.refresh_token;
     }
 };
+
+exports.SpotifyApi = SpotifyApi;
