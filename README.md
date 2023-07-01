@@ -1,2 +1,2 @@
 # spotify-web-api
-A js wrapper for the Spotify Web API, runs on node.js and in browser.
+A wrapper for the [Spotify Web API](https://developer.spotify.com/documentation/web-api) meant to run on node and in the browser, dependency free. (Currently WIP)

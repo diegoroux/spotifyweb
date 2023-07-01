@@ -1,0 +1,31 @@
+{
+  "name": "spotify-web-api",
+  "version": "0.1.0",
+  "description": "A js wrapper for the Spotify Web API, runs on node.js and in browser.",
+  "main": "./src/server.js",
+  "scripts": {
+    "bundle-browser": "bash ./bundle.sh"
+  },
+  "files": [
+    "dist/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diegoroux04/spotify-web-api.git"
+  },
+  "keywords": [
+    "spotify",
+    "wrapper",
+    "web",
+    "api"
+  ],
+  "author": "Diego Roux",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/diegoroux04/spotify-web-api/issues"
+  },
+  "homepage": "https://github.com/diegoroux04/spotify-web-api#readme",
+  "devDependencies": {
+    "uglify-js": "^3.17.4"
+  }
+}
