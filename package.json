@@ -1,31 +1,33 @@
 {
-  "name": "spotify-web-api",
+  "name": "spotifyweb",
   "version": "0.1.0",
-  "description": "A js wrapper for the Spotify Web API, runs on node.js and in browser.",
-  "main": "./src/server.js",
+  "description": "A pure js wrapper for the Spotify Web API, runs on node.js and in browser.",
+  "main": "./dist/server.js",
   "scripts": {
-    "bundle-browser": "bash ./bundle.sh"
+    "prepublishOnly": "webpack --mode=production"
   },
   "files": [
     "dist/"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/diegoroux04/spotify-web-api.git"
+    "url": "git+https://github.com/diegoroux04/spotifyweb.git"
   },
   "keywords": [
     "spotify",
     "wrapper",
     "web",
-    "api"
+    "api",
+    "pure"
   ],
   "author": "Diego Roux",
-  "license": "LGPL-3.0-or-later",
+  "license": "LGPL-3.0",
   "bugs": {
-    "url": "https://github.com/diegoroux04/spotify-web-api/issues"
+    "url": "https://github.com/diegoroux04/spotifyweb/issues"
   },
-  "homepage": "https://github.com/diegoroux04/spotify-web-api#readme",
+  "homepage": "https://github.com/diegoroux04/spotifyweb#readme",
   "devDependencies": {
-    "uglify-js": "^3.17.4"
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
   }
 }

@@ -17,14 +17,14 @@
  *  USA
 */
 
-class AuthError extends Error {
+export class AuthError extends Error {
     constructor(msg) {
         super(msg);
         this.name = 'AuthError';
     }
 }
 
-async function do_auth_refresh(client_id, refresh_token) {
+export async function do_auth_refresh(client_id, refresh_token) {
     let body = new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: refresh_token,
@@ -49,6 +49,3 @@ async function do_auth_refresh(client_id, refresh_token) {
 
     return (await response.json());
 }
-
-exports.AuthError = AuthError;
-exports.do_auth_refresh = do_auth_refresh;

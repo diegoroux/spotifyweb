@@ -17,23 +17,80 @@
  *  USA
 */
 
-const { AuthError, do_auth_refresh } = require('./auth.js');
-const { randomBytes } = require('crypto');
+import { _WebApi } from "./webapi.js";
+import { AuthError } from "./auth.js";
+import { randomBytes } from 'crypto';
 
-function random_string(size) {
-    return randomBytes(size).toString('base64');
-}
+export class SpotifyApi extends _WebApi {
+    constructor(client_id, client_secret, redirect_uri) {
+        super(client_id, redirect_uri);
+        this._client_secret = client_secret;
+    }
 
-function SpotifyApi(client_id, client_secret, redirect_uri) {
-    this._client_id = client_id;
-    this._client_secret = client_secret;
-    this._redirect_uri = redirect_uri;
-}
+    _random_string(size) {
+        return randomBytes(size).toString('base64');
+    }
 
-SpotifyApi.prototype = {
-    auth_by_client_credentials: async function (){
+    async auth_by_client_credentials() {
         let body = new URLSearchParams({
             grant_type: 'client_credentials'
+        });
+
+        let auth = new Buffer.from(this._client_id + ':' + this._client_secret).toString('base64');
+
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + auth,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status < 500) {
+                let data = await response.json();
+                throw new AuthError(data.error_description);
+            }
+            throw new AuthError(response.statusText);
+        }
+
+        let data = await response.json();
+
+        this._access_token = data.access_token;
+        this._access_expires = Date.now() + data.expires_in;
+        this._refresh_token = data.refresh_token;
+    }
+
+    auth_by_code(scope) {
+        this._csrf_token = this._random_string(12);
+
+        let args = new URLSearchParams({
+            client_id: this._client_id,
+            response_type: 'code',
+            redirect_uri: this._redirect_uri,
+            state: this._csrf_token,
+            scope: scope
+        });
+
+        return 'https://accounts.spotify.com/authorize?' + args;
+    }
+
+    async finish_auth_flow(params) {
+        let args = new URLSearchParams(params);
+        let code = args.get('code');
+
+        if ((this._csrf_token != args.get('state')) || (args.get('state') === null)) {
+            throw new AuthError('Request not started by us.');
+        }
+
+        if (code === null) {
+            throw new AuthError(args.get('error'));
+        }
+
+        let body = new URLSearchParams({
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: this._redirect_uri
         });
 
         let auth = new Buffer.from(this._client_id + ':' + this._client_secret).toString('base64');
@@ -60,63 +117,5 @@ SpotifyApi.prototype = {
         this._access_token = data.access_token;
         this._access_expires = Date.now() + data.expires_in;
         this._refresh_token = data.refresh_token;
-    },
-    auth_by_code: function (scope) {
-        this._csrf_token = random_string(12);
-
-        let args = new URLSearchParams({
-            client_id: this._client_id,
-            response_type: 'code',
-            redirect_uri: this._redirect_uri,
-            state: this._csrf_token,
-            scope: scope
-        });
-
-        return 'https://accounts.spotify.com/authorize?' + args;
-    },
-    finish_auth_flow: async function (params) {
-        let args = new URLSearchParams(params);
-        let code = args.get('code');
-
-        if ((this._csrf_token != args.get('state')) || (args.get('state') === null)) {
-            throw new AuthError('Request not started by us.');
-        }
-
-        if (code === null) {
-            throw new AuthError(args.get('error'));
-        }
-
-        let body = new URLSearchParams({
-            grant_type:  'authorization_code',
-            code: code,
-            redirect_uri: this._redirect_uri
-        });
-
-        let auth = new Buffer.from(this._client_id + ':' + this._client_secret).toString('base64');
-
-        const response = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Basic ' + auth,
-                'Content-Type': 'application/x-www-form-urlencoded'   
-            },
-            body: body
-        });
-
-        if (!response.ok) {
-            if (response.status < 500) {
-                let data = await response.json();
-                throw new AuthError(data.error_description);
-            }
-            throw new AuthError(response.statusText);
-        }
-
-        let data = await response.json();
-        
-        this._access_token = data.access_token;
-        this._access_expires = Date.now() + data.expires_in;
-        this._refresh_token = data.refresh_token;
     }
-};
-
-exports.SpotifyApi = SpotifyApi;
+}

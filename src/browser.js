@@ -17,42 +17,42 @@
  *  USA
 */
 
-function b64urlencode(data) {
-    return btoa(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
+import { _WebApi } from "./webapi.js";
+import { AuthError } from "./auth.js";
 
-async function gen_code_challenge(code_verifier) {
-    const encoder = new TextEncoder();
+export class SpotifyApi extends _WebApi {
+    constructor(client_id, redirect_uri) {
+        super(client_id, redirect_uri);
+    }
 
-    let bytes = encoder.encode(code_verifier);
-    let digest = await window.crypto.subtle.digest('SHA-256', bytes);
-    digest = new Uint8Array(digest);
+    _b64urlencode(data) {
+        return btoa(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
 
-    return b64urlencode(String.fromCharCode.apply(null, digest));
-}
+    async _gen_code_challenge(code_verifier) {
+        const encoder = new TextEncoder();
 
-function random_string(size) {
-    let bytes = new Uint8Array(size);
+        let bytes = encoder.encode(code_verifier);
+        let digest = await window.crypto.subtle.digest('SHA-256', bytes);
+        digest = new Uint8Array(digest);
 
-    window.crypto.getRandomValues(bytes);
+        return this._b64urlencode(String.fromCharCode.apply(null, digest));
+    }
 
-    return b64urlencode(String.fromCharCode.apply(null, bytes));
-}
+    _random_string(size) {
+        let bytes = new Uint8Array(size);
+        window.crypto.getRandomValues(bytes);
+        return this._b64urlencode(String.fromCharCode.apply(null, bytes));
+    }
 
-function SpotifyApi(client_id, redirect_uri) {
-    this._client_id = client_id;
-    this._redirect_uri = redirect_uri;
-}
-
-SpotifyApi.prototype = {
-    auth_by_pcke_flow: function (scope) {
-        let code_verifier = random_string(95);
-        let csrf_token = random_string(12);
+    auth_by_pcke_flow(scope) {
+        let code_verifier = this._random_string(95);
+        let csrf_token = this._random_string(12);
 
         localStorage.setItem('code_verifier', code_verifier);
         localStorage.setItem('csrf_token', csrf_token);
 
-        gen_code_challenge(code_verifier).then(code_challenge => {
+        this._gen_code_challenge(code_verifier).then(code_challenge => {
             let args = new URLSearchParams({
                 response_type: 'code',
                 client_id: this._client_id,
@@ -65,9 +65,9 @@ SpotifyApi.prototype = {
 
             window.location = 'https://accounts.spotify.com/authorize?' + args;
         });
-    },
+    }
 
-    finish_pcke_flow: async function () {
+    async finish_pcke_flow() {
         const url_params = new URLSearchParams(window.location.search);
         let code = url_params.get('code');
 
@@ -97,7 +97,7 @@ SpotifyApi.prototype = {
             },
             body: body
         });
-
+        
         if (!response.ok) {
             if (response.status < 500) {
                 let data = await response.json();
@@ -116,4 +116,4 @@ SpotifyApi.prototype = {
         localStorage.setItem('access_expires', this._access_expires);
         localStorage.setItem('refresh_token', data.refresh_token);
     }
-};
+}
