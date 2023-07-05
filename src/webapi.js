@@ -17,18 +17,22 @@
  *  USA
 */
 
-import { ReAuthNeeded, RateLimited, HTTPErr } from "./errors.js";
+import { ReAuthNeeded, RateLimited, HTTPErr, Forbidden } from "./errors.js";
 
 export class _WebApi {
     constructor(client_id, redirect_uri) {
         this._client_id = client_id;
         this._redirect_uri = redirect_uri;
-        this._endpoint_uri = 'https://api.spotify.com/v1/';
+        this._endpoint_uri = 'https://api.spotify.com/v1';
     }
 
     async _handle_http_err(code) {
         if (code == 401) {
             throw new ReAuthNeeded();
+        }
+
+        if (code == 403) {
+            throw new Forbidden('It\'s possible that you do not have the necessary client scope to perform this action.');
         }
 
         if (code == 429) {
@@ -110,7 +114,7 @@ export class _WebApi {
             offset: offset
         });
 
-        return await this._auth_get('/me/top/' + type + params);
+        return await this._auth_get('/me/top/' + type + '?' + params);
     }
 
     /**
@@ -161,7 +165,7 @@ export class _WebApi {
             params.after = after;
         }
 
-        return await this._auth_get('/me/following' + params);
+        return await this._auth_get('/me/following?' + params);
     }
 
     /**
@@ -188,7 +192,7 @@ export class _WebApi {
             ids: ids.join()
         });
 
-        await this._auth_delete('/me/following' + params);
+        await this._auth_delete('/me/following?' + params);
     }
 
     /**
@@ -205,7 +209,7 @@ export class _WebApi {
             ids: ids.join()
         });
 
-        return await this._auth_get('/me/following/contains' + params); 
+        return await this._auth_get('/me/following/contains?' + params); 
     }
 
     /**
@@ -221,7 +225,7 @@ export class _WebApi {
             ids: ids.join()
         });
 
-        return await this._auth_get('/playlists/' + playlist_id + '/followers/contains' + params);
+        return await this._auth_get('/playlists/' + playlist_id + '/followers/contains?' + params);
     }
 
 }
