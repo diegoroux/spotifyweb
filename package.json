@@ -6,6 +6,10 @@
   "scripts": {
     "prepublishOnly": "webpack --mode=production"
   },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/diegoroux04"
+  },
   "files": [
     "dist/"
   ],
