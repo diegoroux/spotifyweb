@@ -127,11 +127,11 @@ export class _WebApi {
      * Add the current user as a follower of a playlist.
      * @async
      * @param {string} playlist_id - Spotify ID of the playlist.
-     * @param {boolean} public - Wether the playlist will be included in user's public
-     * playlists or will remain private. Default: true
+     * @param {boolean} playlist_public - Whether the playlist will be included in user's 
+     * public playlists or will remain private. Default: true
      */
-    async follow_playlist(playlist_id, public=true) {
-        await this._auth_put('/playlists/' + playlist_id + '/followers', { public: public });
+    async follow_playlist(playlist_id, playlist_public=true) {
+        await this._auth_put('/playlists/' + playlist_id + '/followers', { public: playlist_public });
     }
 
     /**
