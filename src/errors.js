@@ -45,6 +45,13 @@ export class ReAuthNeeded extends Error {
     }
 }
 
+export class Forbidden extends Error {
+    constructor(msg) {
+        super(msg);
+        this.name = 'Forbidden';
+    }
+}
+
 export class HTTPErr extends Error {
     constructor(msg) {
         super(msg);
