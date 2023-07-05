@@ -18,11 +18,12 @@
 */
 
 import { _WebApi } from "./webapi.js";
-import { AuthError } from "./auth.js";
+import { AuthError, CSRFInvalid } from "./errors.js";
 
 export class SpotifyApi extends _WebApi {
     constructor(client_id, redirect_uri) {
         super(client_id, redirect_uri);
+        this._auth_type = 'auth_code_pcke';
     }
 
     _b64urlencode(data) {
@@ -43,6 +44,48 @@ export class SpotifyApi extends _WebApi {
         let bytes = new Uint8Array(size);
         window.crypto.getRandomValues(bytes);
         return this._b64urlencode(String.fromCharCode.apply(null, bytes));
+    }
+
+    async _refresh_auth() {
+        this._access_token = localStorage.getItem('access_token');
+        this._access_expires = localStorage.getItem('access_expires');
+        this._refresh_token = localStorage.getItem('refresh_token');
+
+        if (Date.now() < this._access_expires) {
+            return;
+        }
+
+        let body = new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: this._refresh_token,
+            client_id: this._client_id
+        });
+
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: body
+        });
+
+        if (!response.ok) {
+            if (response.status < 500) {
+                let data = await response.json();
+                throw new AuthError(data.error_description);
+            }
+            throw new AuthError(response.statusText);
+        }
+
+        let data = await response.json();
+
+        this._access_token = data.access_token;
+        this._access_expires = Date.now() + data.expires_in;
+        this._refresh_token = data.refresh_token;
+
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('access_expires', this._access_expires);
+        localStorage.setItem('refresh_token', data.refresh_token);
     }
 
     auth_by_pcke_flow(scope) {
@@ -75,7 +118,7 @@ export class SpotifyApi extends _WebApi {
         let csrf_token = localStorage.getItem('csrf_token');
 
         if ((csrf_token != url_params.get('state')) || (url_params.get('state') === null)) {
-            throw new AuthError('Request not started by us.');
+            throw new CSRFInvalid('Request not started by us.');
         }
 
         if (code === null) {

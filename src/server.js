@@ -18,7 +18,7 @@
 */
 
 import { _WebApi } from "./webapi.js";
-import { AuthError } from "./auth.js";
+import { AuthError, CSRFInvalid } from "./errors.js";
 import { randomBytes } from 'crypto';
 
 export class SpotifyApi extends _WebApi {
@@ -29,6 +29,46 @@ export class SpotifyApi extends _WebApi {
 
     _random_string(size) {
         return randomBytes(size).toString('base64');
+    }
+
+    async _refresh_auth() {
+        if (Date.now() < this._access_expires) {
+            return;
+        }
+
+        if (this._auth_type === 'client_credentials') {
+            return await this.auth_by_client_credentials();
+        }
+
+        let body = new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: this._refresh_token
+        });
+
+        let auth = new Buffer.from(this._client_id + ':' + this._client_secret).toString('base64');
+
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + auth,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: body
+        });
+
+        if (!response.ok) {
+            if (response.status < 500) {
+                let data = await response.json();
+                throw new AuthError(data.error_description);
+            }
+            throw new AuthError(response.statusText);
+        }
+
+        let data = await response.json();
+
+        this._access_token = data.access_token;
+        this._access_expires = Date.now() + data.expires_in;
+        this._refresh_token = data.refresh_token;
     }
 
     async auth_by_client_credentials() {
@@ -59,6 +99,7 @@ export class SpotifyApi extends _WebApi {
         this._access_token = data.access_token;
         this._access_expires = Date.now() + data.expires_in;
         this._refresh_token = data.refresh_token;
+        this._auth_type = 'client_credentials';
     }
 
     auth_by_code(scope) {
@@ -80,7 +121,7 @@ export class SpotifyApi extends _WebApi {
         let code = args.get('code');
 
         if ((this._csrf_token != args.get('state')) || (args.get('state') === null)) {
-            throw new AuthError('Request not started by us.');
+            throw new CSRFInvalid('Request not started by us.');
         }
 
         if (code === null) {
@@ -117,5 +158,6 @@ export class SpotifyApi extends _WebApi {
         this._access_token = data.access_token;
         this._access_expires = Date.now() + data.expires_in;
         this._refresh_token = data.refresh_token;
+        this._auth_type = 'auth_code';
     }
 }

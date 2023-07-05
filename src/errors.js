@@ -24,28 +24,30 @@ export class AuthError extends Error {
     }
 }
 
-export async function do_auth_refresh(client_id, refresh_token) {
-    let body = new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refresh_token,
-        client_id: client_id
-    });
-
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: body
-    });
-
-    if (!response.ok) {
-        if (response.status < 500) {
-            let data = await response.json();
-            throw new AuthError(data.error_description);
-        }
-        throw new AuthError(response.statusText);
+export class CSRFInvalid extends Error {
+    constructor(msg) {
+        super(msg);
+        this.name = 'CSRFInvalid';
     }
+}
 
-    return (await response.json());
+export class RateLimited extends Error {
+    constructor(msg) {
+        super(msg);
+        this.name = 'RateLimited';
+    }
+}
+
+export class ReAuthNeeded extends Error {
+    constructor(msg) {
+        super(msg);
+        this.name = 'ReAuthNeeded';
+    }
+}
+
+export class HTTPErr extends Error {
+    constructor(msg) {
+        super(msg);
+        this.name = 'HTTPErr';
+    }
 }
