@@ -280,6 +280,65 @@ export class SpotifyUser {
     }
 
     /**
+     * Get a list of the songs saved in the current Spotify user's 'Your Music' library.
+     * @async
+     * @param {string} market - An ISO 3166-1 alpha-2 country code. Only content that is available
+     * in that market will be returned, the country associated with the user account will take
+     * priority over this parameter.
+     * @param {number} limit - The maximum number of items to return. Max: 50. Default: 20
+     * @param {number} offset - The index of the first item to return. Default: 0
+     * @returns {Promise} Returns object with saved tracks by user.
+     */
+    async get_saved_tracks(market='', limit=20, offset=0) {
+        let params = new URLSearchParams({
+            limit: limit,
+            offset: offset
+        });
+
+        if (market !== '') {
+            params.append('market', market);
+        }
+
+        return await this.api._auth_get('/me/tracks?' + params);
+    }
+
+    /**
+     * Save one or more tracks to the current user's 'Your Music' library.
+     * @async
+     * @param {object} ids - An array of the tracks Spotify IDs. Max: 50 IDs.
+     */
+    async save_tracks(ids) {
+        await this.api._auth_put('/me/tracks', { ids: ids });
+    }
+
+    /**
+     * Remove one or more tracks from the current user's 'Your Music' library.
+     * @async
+     * @param {object} ids - An array of the tracks Spotify IDs. Max: 50 IDs.
+     */
+    async remove_tracks(ids) {
+        let params = new URLSearchParams({
+            ids: ids.join()
+        });
+
+        await this.api._auth_delete('/me/tracks?' + params);
+    }
+
+    /**
+     * Check if one or more tracks is already saved in the current Spotify user's 'Your Music' library.
+     * @async
+     * @param {object} ids - An array of the tracks Spotify IDs. Max: 50 IDs.
+     * @returns {Promise} Returns array of booleans.
+     */
+    async check_if_tracks_saved(ids) {
+        let params = new URLSearchParams({
+            ids: ids.join()
+        });
+
+        return await this.api._auth_delete('/me/tracks/contains?' + params);
+    }
+
+    /**
      * Get detailed profile information about the current user
      * (including the current user's username).
      * @async
