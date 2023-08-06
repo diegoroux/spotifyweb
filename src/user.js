@@ -33,7 +33,7 @@ export class SpotifyUser {
      * will take priority over this parameter.
      * @returns {Promise} Returns object with albums saved by the user. 
      */
-     async get_saved_albums(limit=20, offset=0, market='') {
+    async get_saved_albums(limit=20, offset=0, market='') {
         let params = new URLSearchParams({
             limit: limit,
             offset: offset
