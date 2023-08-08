@@ -17,6 +17,7 @@
  *  USA
 */
 
+import { SpotifyAlbums } from "./albums.js";
 import { ReAuthNeeded, RateLimited, HTTPErr, Forbidden } from "./errors.js";
 import { SpotifyPlaylists } from "./playlists.js";
 import { SpotifyUser } from "./user.js";
@@ -29,6 +30,7 @@ export class _WebApi {
 
         this.user = new SpotifyUser(this);
         this.playlists = new SpotifyPlaylists(this);
+        this.albums = new SpotifyAlbums(this);
     }
 
     async _handle_http_err(code) {
