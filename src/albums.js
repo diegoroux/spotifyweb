@@ -39,7 +39,7 @@ export class SpotifyAlbums {
             url = url + '?' + params;
         }
 
-        return await this._get(url);
+        return await this.api._auth_get(url);
     }
 
     /**
@@ -57,7 +57,7 @@ export class SpotifyAlbums {
             market: market
         });
 
-        return await this._get('/albums?' + params);
+        return await this.api._auth_get('/albums?' + params);
     }
 
     /**
@@ -71,14 +71,14 @@ export class SpotifyAlbums {
      * @param {number} offset - The index of the first item to return.
      * @returns 
     */
-    async get_tracks(id, market='XX', limit=20, offset=0) {
+    async get_tracks(id, market='', limit=20, offset=0) {
         let params = new URLSearchParams({
             market: market,
             limit: limit,
             offset: offset
         });
 
-        return await this._get('/albums/' + id + '/tracks?' + params);
+        return await this.api._auth_get('/albums/' + id + '/tracks?' + params);
     }
 
     /**
@@ -100,6 +100,6 @@ export class SpotifyAlbums {
             params.append('country', country);
         }
 
-        return await this._get('/browse/new-releases?' + params);
+        return await this.api._auth_get('/browse/new-releases?' + params);
     }
 }

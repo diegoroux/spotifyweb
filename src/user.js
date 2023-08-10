@@ -43,7 +43,7 @@ export class SpotifyUser {
             params.append('market', market);
         }
 
-        return await this._auth_get('/me/albums?' + params);
+        return await this.api._auth_get('/me/albums?' + params);
     }
 
     /**
@@ -377,7 +377,7 @@ export class SpotifyUser {
      * @returns {Promise} Returns object with user profile information.
      */
     async get_user_profile(user_id) {
-        return await this._auth_get('/users/' + user_id);
+        return await this.api._auth_get('/users/' + user_id);
     }
 
     /**
@@ -388,7 +388,7 @@ export class SpotifyUser {
      * public playlists or will remain private. Default: true
      */
     async follow_playlist(playlist_id, playlist_public=true) {
-        await this._auth_put('/playlists/' + playlist_id + '/followers', { public: playlist_public });
+        await this.api._auth_put('/playlists/' + playlist_id + '/followers', { public: playlist_public });
     }
 
     /**
@@ -397,7 +397,7 @@ export class SpotifyUser {
      * @param {string} playlist_id - Spotify ID of the playlist.
      */
     async unfollow_playlist(playlist_id) {
-        await this._auth_delete('/playlists/' + playlist_id + '/followers');
+        await this.api._auth_delete('/playlists/' + playlist_id + '/followers');
     }
 
     /**
@@ -418,7 +418,7 @@ export class SpotifyUser {
             params.after = after;
         }
 
-        return await this._auth_get('/me/following?' + params);
+        return await this.api._auth_get('/me/following?' + params);
     }
 
     /**
@@ -429,7 +429,7 @@ export class SpotifyUser {
      * A maximum of 50 IDs can be sent in one request. 
      */
     async follow(type, ids) {
-        await this._auth_put('/me/following?type=' + type, { ids: ids });
+        await this.api._auth_put('/me/following?type=' + type, { ids: ids });
     }
 
     /**
@@ -445,7 +445,7 @@ export class SpotifyUser {
             ids: ids.join()
         });
 
-        await this._auth_delete('/me/following?' + params);
+        await this.api._auth_delete('/me/following?' + params);
     }
 
     /**
@@ -462,6 +462,6 @@ export class SpotifyUser {
             ids: ids.join()
         });
 
-        return await this._auth_get('/me/following/contains?' + params); 
+        return await this.api._auth_get('/me/following/contains?' + params); 
     }
 }
