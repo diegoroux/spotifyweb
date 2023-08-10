@@ -82,4 +82,14 @@ export class SpotifyArtists {
 
         return await this.api._auth_get('/artists/' + id + '/top-tracks?' + params);
     }
+
+    /**
+     * Get Spotify catalog information about artists similar to a given artist.
+     * Similarity is based on analysis of the Spotify community's listening history.
+     * @param {string} id - The Spotify ID of the artist.
+     * @returns {Promise} Returns related artists.
+    */
+    async get_related_artists(id) {
+        return await this.api._auth_get('/artists/' + id +'/related-artists');
+    }
 }
